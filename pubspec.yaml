@@ -1,5 +1,5 @@
 name: simple_loading_button
-description: A new Flutter package project.
+description: Simple loading Button.
 version: 0.0.1
 homepage: null
 
@@ -8,7 +8,6 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  animated_size_and_fade: ^3.0.0
   flutter:
     sdk: flutter
 

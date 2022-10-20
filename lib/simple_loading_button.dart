@@ -99,17 +99,19 @@ class SimpleLoadingButtonState extends State<SimpleLoadingButton>
         } else {
           child = btnIdle;
         }
-        return child;
-        /*return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 5000),
-          transitionBuilder: (Widget child, Animation<double> animation) =>
-              SizeTransition(
-            axis: Axis.horizontal,
-            sizeFactor: animation,
-            child: child,
-          ),
+
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          // ignore: todo
+          //TODO: add fade and animatied size, both transition
+          // transitionBuilder: (Widget child, Animation<double> animation) =>
+          //     SizeTransition(
+          //   axis: Axis.horizontal,
+          //   sizeFactor: animation,
+          //   child: child,
+          // ),
           child: child,
-        );*/
+        );
       },
     );
   }
