@@ -1,3 +1,6 @@
-## 0.0.1
+## 0.0.2
+### Changed
+- New approach
 
-* TODO: Describe initial release.
+
+## 0.0.1
