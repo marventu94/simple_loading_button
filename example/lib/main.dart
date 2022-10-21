@@ -35,9 +35,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SimpleLoadingButton(
           label: 'Pepe',
           onPressed: () async {
-            await Future.delayed(const Duration(seconds: 2));
+            await Future.delayed(const Duration(milliseconds: 500));
           },
-          fontSize: 20,
+          //fontSize: 14,
         ),
       ),
     );
