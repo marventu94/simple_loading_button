@@ -5,114 +5,132 @@ import 'package:flutter/material.dart';
 class SimpleLoadingButton extends StatefulWidget {
   final Function onPressed;
   final String label;
-  final double fontSize;
-  final Color? backgroundColor;
-  final Color? textColor;
-
+  final int fontSize;
   const SimpleLoadingButton({
     Key? key,
-    required this.onPressed,
     required this.label,
-    this.fontSize = 16,
-    this.backgroundColor,
-    this.textColor,
+    required this.onPressed,
+    this.fontSize = 20,
   }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => SimpleLoadingButtonState();
+  State<SimpleLoadingButton> createState() => _SimpleLoadingButtonState();
 }
 
-class SimpleLoadingButtonState extends State<SimpleLoadingButton>
+class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
     with TickerProviderStateMixin {
-  Future _future = Future.value();
+  bool animateActive = false;
+  int endBothAnimation = 0;
+  late final AnimationController _controllerFade = AnimationController(
+    duration: const Duration(milliseconds: 300),
+    vsync: this,
+  );
 
-  Future<void> triggerEvent() async {
-    await widget.onPressed();
-    return;
+  late final Animation<double> _animationFade = CurvedAnimation(
+    parent: _controllerFade,
+    curve: Curves.easeIn,
+  );
+
+  late final AnimationController _controllerSlide = AnimationController(
+    duration: const Duration(milliseconds: 300),
+    vsync: this,
+  );
+
+  late final Animation<Offset> _animationSlide = Tween<Offset>(
+    begin: Offset.zero,
+    end: const Offset(0.4, 0.0),
+  ).animate(CurvedAnimation(
+    parent: _controllerSlide,
+    curve: Curves.easeIn,
+  ));
+
+  @override
+  void dispose() {
+    _controllerSlide.dispose();
+    _controllerFade.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    Widget btnIdle = TextButton(
-      key: const ValueKey(0),
-      onPressed: () {
+    return AnimatedContainer(
+      onEnd: () {
         setState(() {
-          _future = triggerEvent();
+          if (endBothAnimation < 2) {
+            endBothAnimation++;
+          }
         });
       },
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.all(widget.fontSize / 2),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(2.0)),
-        ),
-        backgroundColor: widget.backgroundColor ?? theme.primaryColor,
-      ),
-      child: Text(
-        widget.label,
-        style: TextStyle(
-          color: widget.textColor ?? Colors.white,
-          fontSize: widget.fontSize,
-        ),
-      ),
-    );
-
-    Widget btnLoading = TextButton(
-      key: const ValueKey(1),
-      style: TextButton.styleFrom(
-          padding: EdgeInsets.all(widget.fontSize / 2),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(2.0)),
-          ),
-          backgroundColor: (widget.backgroundColor != null)
-              ? widget.backgroundColor!.withAlpha(90)
-              : theme.primaryColor.withAlpha(90)),
-      onPressed: null,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(width: 4),
-          SizedBox(
-            height: widget.fontSize * 0.7,
-            width: widget.fontSize * 0.7,
-            child: const CircularProgressIndicator(),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            widget.label,
-            style: TextStyle(
-              color: widget.textColor ?? Colors.white,
-              fontSize: widget.fontSize,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+      color: (animateActive) ? Colors.blue.withAlpha(90) : Colors.blue,
+      width: (animateActive)
+          ? widget.fontSize * 6
+          : (widget.fontSize * 6 - widget.fontSize.toDouble() * 0.7),
+      height: widget.fontSize * 2.2,
+      child: InkWell(
+        onTap: () async {
+          if (endBothAnimation == 2) {
+            endBothAnimation = 0;
+          }
+          if (!animateActive && endBothAnimation == 0) {
+            triggerAnimation();
+            await widget.onPressed();
+            triggerAnimation();
+          }
+        },
+        child: Center(
+          child: SizedBox(
+            width: double.infinity,
+            child: Padding(
+              padding: EdgeInsets.only(left: widget.fontSize.toDouble() * 0.8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FadeTransition(
+                    opacity: _animationFade,
+                    child: SizedBox(
+                      height: widget.fontSize.toDouble() * 0.7,
+                      width: widget.fontSize.toDouble() * 0.7,
+                      child: const CircularProgressIndicator(),
+                    ),
+                  ),
+                  SlideTransition(
+                    position: _animationSlide,
+                    child: Text(
+                      widget.label,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: widget.fontSize.toDouble(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
+  }
 
-    return FutureBuilder(
-      future: _future,
-      builder: (context, snapshot) {
-        late Widget child;
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          child = btnLoading;
-        } else {
-          child = btnIdle;
+  triggerAnimation() {
+    setState(() {
+      if (_controllerFade.status == AnimationStatus.completed) {
+        _controllerFade.reverse();
+      } else {
+        if (_controllerFade.status == AnimationStatus.dismissed) {
+          _controllerFade.forward();
         }
-
-        return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
-          // ignore: todo
-          //TODO: add fade and animatied size, both transition
-          // transitionBuilder: (Widget child, Animation<double> animation) =>
-          //     SizeTransition(
-          //   axis: Axis.horizontal,
-          //   sizeFactor: animation,
-          //   child: child,
-          // ),
-          child: child,
-        );
-      },
-    );
+      }
+      if (_controllerSlide.status == AnimationStatus.completed) {
+        _controllerSlide.reverse();
+      } else {
+        if (_controllerSlide.status == AnimationStatus.dismissed) {
+          _controllerSlide.forward();
+        }
+      }
+      animateActive = !animateActive;
+    });
   }
 }
