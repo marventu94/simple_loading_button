@@ -1,4 +1,4 @@
-# Simple Lading Button - Flutter Package
+# Simple Loading Button - Flutter Package
 
 I will add a proper description in the future.
 
