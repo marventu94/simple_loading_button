@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 class SimpleLoadingButton extends StatefulWidget {
   final Function onPressed;
   final String label;
-  final int fontSize;
+  final double fontSize;
+  final Color backgroundColor;
+  final Color textColor;
   const SimpleLoadingButton({
     Key? key,
     required this.label,
     required this.onPressed,
-    this.fontSize = 20,
+    this.backgroundColor = Colors.blue,
+    this.textColor = Colors.white,
+    this.fontSize = 16.00,
   }) : super(key: key);
 
   @override
@@ -19,6 +23,8 @@ class SimpleLoadingButton extends StatefulWidget {
 
 class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
     with TickerProviderStateMixin {
+  late double textLength;
+  late double originWithButton;
   bool animateActive = false;
   int endBothAnimation = 0;
   late final AnimationController _controllerFade = AnimationController(
@@ -38,7 +44,7 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
 
   late final Animation<Offset> _animationSlide = Tween<Offset>(
     begin: Offset.zero,
-    end: const Offset(0.4, 0.0),
+    end: const Offset(0.2, 0.0),
   ).animate(CurvedAnimation(
     parent: _controllerSlide,
     curve: Curves.easeIn,
@@ -49,6 +55,14 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
     _controllerSlide.dispose();
     _controllerFade.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    textLength =
+        calcTextSize(widget.label, TextStyle(fontSize: widget.fontSize));
+    originWithButton = textLength + 2 * widget.fontSize.toDouble() * 0.7001;
+    super.initState();
   }
 
   @override
@@ -63,10 +77,10 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
       },
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
-      color: (animateActive) ? Colors.blue.withAlpha(90) : Colors.blue,
-      width: (animateActive)
-          ? widget.fontSize * 6
-          : (widget.fontSize * 6 - widget.fontSize.toDouble() * 0.7),
+      color: (animateActive)
+          ? widget.backgroundColor.withAlpha(90)
+          : widget.backgroundColor,
+      width: (animateActive) ? originWithButton * 1.2 : originWithButton,
       height: widget.fontSize * 2.2,
       child: InkWell(
         onTap: () async {
@@ -81,32 +95,35 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
         },
         child: Center(
           child: SizedBox(
-            width: double.infinity,
-            child: Padding(
-              padding: EdgeInsets.only(left: widget.fontSize.toDouble() * 0.8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FadeTransition(
-                    opacity: _animationFade,
-                    child: SizedBox(
-                      height: widget.fontSize.toDouble() * 0.7,
-                      width: widget.fontSize.toDouble() * 0.7,
-                      child: const CircularProgressIndicator(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FadeTransition(
+                  opacity: _animationFade,
+                  child: SizedBox(
+                    height: widget.fontSize.toDouble() * 0.7,
+                    width: widget.fontSize.toDouble() * 0.7,
+                    child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(widget.backgroundColor),
                     ),
                   ),
-                  SlideTransition(
-                    position: _animationSlide,
-                    child: Text(
-                      widget.label,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: widget.fontSize.toDouble(),
-                      ),
+                ),
+                SlideTransition(
+                  position: _animationSlide,
+                  child: Text(
+                    widget.label,
+                    style: TextStyle(
+                      color: widget.textColor,
+                      fontSize: widget.fontSize.toDouble(),
                     ),
                   ),
-                ],
-              ),
+                ),
+                SizedBox(
+                  height: widget.fontSize.toDouble() * 0.7001,
+                  width: widget.fontSize.toDouble() * 0.7001,
+                ),
+              ],
             ),
           ),
         ),
@@ -132,5 +149,14 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
       }
       animateActive = !animateActive;
     });
+  }
+
+  double calcTextSize(String text, TextStyle style) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      textScaleFactor: WidgetsBinding.instance.window.textScaleFactor,
+    )..layout();
+    return textPainter.size.width;
   }
 }
