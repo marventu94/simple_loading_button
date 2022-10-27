@@ -8,13 +8,15 @@ class SimpleLoadingButton extends StatefulWidget {
   final double fontSize;
   final Color backgroundColor;
   final Color textColor;
+  final FontWeight fontWeight;
   const SimpleLoadingButton({
     Key? key,
     required this.label,
     required this.onPressed,
     this.backgroundColor = Colors.blue,
     this.textColor = Colors.white,
-    this.fontSize = 16.00,
+    this.fontSize = 14.00,
+    this.fontWeight = FontWeight.bold,
   }) : super(key: key);
 
   @override
@@ -44,7 +46,7 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
 
   late final Animation<Offset> _animationSlide = Tween<Offset>(
     begin: Offset.zero,
-    end: const Offset(0.2, 0.0),
+    end: const Offset(0.3, 0.0),
   ).animate(CurvedAnimation(
     parent: _controllerSlide,
     curve: Curves.easeIn,
@@ -59,9 +61,13 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
 
   @override
   void initState() {
-    textLength =
-        calcTextSize(widget.label, TextStyle(fontSize: widget.fontSize));
-    originWithButton = textLength + 2 * widget.fontSize.toDouble() * 0.7001;
+    textLength = calcTextSize(
+        widget.label,
+        TextStyle(
+          fontSize: widget.fontSize,
+          fontWeight: widget.fontWeight,
+        ));
+    originWithButton = textLength + 3 * widget.fontSize.toDouble();
     super.initState();
   }
 
@@ -81,7 +87,7 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
           ? widget.backgroundColor.withAlpha(90)
           : widget.backgroundColor,
       width: (animateActive) ? originWithButton * 1.2 : originWithButton,
-      height: widget.fontSize * 2.2,
+      height: widget.fontSize * 2.5,
       child: InkWell(
         onTap: () async {
           if (endBothAnimation == 2) {
@@ -116,6 +122,7 @@ class _SimpleLoadingButtonState extends State<SimpleLoadingButton>
                     style: TextStyle(
                       color: widget.textColor,
                       fontSize: widget.fontSize.toDouble(),
+                      fontWeight: widget.fontWeight,
                     ),
                   ),
                 ),

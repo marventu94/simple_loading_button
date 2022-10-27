@@ -1,3 +1,8 @@
+## 0.0.4
+- fix error;
+- more padding;
+- add fontWeight
+
 ## 0.0.3
 - add backgroundColor;
 - add textColor;
